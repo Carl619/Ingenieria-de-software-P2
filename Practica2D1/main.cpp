@@ -37,12 +37,14 @@ struct Bala {
 void dibujarEscenario();
 void dibujarBala(Bala * bala);
 void moverBala(Bala * bala);
-void  dibujarPersonaje(Personaje pers);
+void dibujarPersonaje(Personaje pers);
 void moverPersonaje(Personaje * pers, char * direccion);
 void moverEnemigo(Personaje * enemigo);
 Personaje * reaparicionEnemigo(Personaje pers);
 Bala * disparar(Personaje pers, char * direccion);
-void hacerMundo(Personaje pers, Bala * bala);
+void colisiones();
+void hacerMundo();
+void accionTecla();
 
 Personaje pers = { INICIOX,INICIOY,"*" };
 Bala * bala = nullptr;
@@ -66,25 +68,12 @@ void hacerMundo() {
 	dibujarEscenario();
 	dibujarPersonaje(pers);
 
-	
-	if(enemigo != nullptr && bala != nullptr)
-	if (enemigo->x == bala->x) {
-		delete bala;
-		bala = nullptr;
-		delete enemigo;
-		enemigo = nullptr;
-	}
-		
-	if (bala != nullptr)
-		if (bala->x <= 0 || bala->x > 80) {
-			delete bala;
-			bala = nullptr;
-		}
+
 	if (bala != nullptr) {
 		moverBala(bala);
 		dibujarBala(bala);
 	}
-	
+
 	if (enemigo != nullptr) {
 		moverEnemigo(enemigo);
 		dibujarPersonaje(*enemigo);
@@ -95,6 +84,22 @@ void hacerMundo() {
 		enemigo = reaparicionEnemigo(pers);
 		dibujarPersonaje(*enemigo);
 	}
+}
+
+void colisiones() {
+	if (enemigo != nullptr && bala != nullptr)
+		if (enemigo->x == bala->x || enemigo->x - 1 == bala->x || enemigo->x + 1 == bala->x) {
+			delete bala;
+			bala = nullptr;
+			delete enemigo;
+			enemigo = nullptr;
+		}
+
+	if (bala != nullptr)
+		if (bala->x <= 0 || bala->x > 80) {
+			delete bala;
+			bala = nullptr;
+		}
 }
 
 Bala * disparar(Personaje pers, char * direccion)
@@ -136,11 +141,11 @@ void moverBala(Bala * bala)
 void moverPersonaje(Personaje * pers, char * direccion)
 {
 	if (pers->x > 0 && pers->x < 80) {
-	if (strcmp(direccion, "der") == 0)
-		pers->x++;
-	else if (strcmp(direccion, "izq") == 0)
-		pers->x--;
-}
+		if (strcmp(direccion, "der") == 0)
+			pers->x++;
+		else if (strcmp(direccion, "izq") == 0)
+			pers->x--;
+	}
 	else {
 		if (pers->x == 0)
 			pers->x++;
@@ -188,9 +193,10 @@ void clear()
 void update() {
 	clear();
 	hacerMundo();
+	colisiones();
 }
 
-void mover() {
+void accionTecla() {
 	int c;
 	if (_kbhit()) {
 		c = _getch();
@@ -213,7 +219,7 @@ int main()
 	srand(static_cast<unsigned int>(time(NULL)));
 	while (1) {
 		update();
-		mover();
+		accionTecla();
 		Sleep(100);
 	}
 	return 0;
